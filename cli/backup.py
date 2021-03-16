@@ -7,7 +7,7 @@ from stat import S_ISDIR, S_ISREG
 
 
 class RemarkableBackup:
-    def __init__(self, remote_path, destination, host='10.11.99.1', port=22, username='root', password=None, log='./paramiko.log'):
+    def __init__(self, remote_path, destination, host='10.11.99.1', port=22, username='root', password=None, log='./backup_download.log'):
         self.remote_path = remote_path
         self.destination = destination
         self.temp = '/tmp/remarkable2_' + time.strftime('%m%d%Y') + '/'
@@ -48,7 +48,6 @@ class RemarkableBackup:
         '''
         return [file_indir for file_indir in self.sftp.listdir_iter(remote_dir) if S_ISDIR(file_indir.st_mode)]
 
-# SPLIT THIS BETWEEN CREATE DIRECTORIES & GET DIRS?
     def create_directories(self, remote_dir):
         '''
         locate directories and create in local path
@@ -56,7 +55,10 @@ class RemarkableBackup:
         for directory in self.scan_directories(remote_dir):
             value = oct(directory.st_mode)
             dir_perms = int(str(value[4:]), 8)
-            os.mkdir(self.temp + directory.filename, mode=dir_perms)
+            try:
+                os.mkdir(self.temp + directory.filename, mode=dir_perms)
+            except FileExistsError as e:
+                print(e, directory.filename, 'Backup subdir already exists moving on....')
             self.download_files(remote_dir + directory.filename +
                                 '/', self.temp + directory.filename + '/')
 
@@ -88,6 +90,11 @@ class RemarkableBackup:
         except FileExistsError as e:
             print(e, 'Looks like temp backup directory exists overwriting files...')
 
+        try:
+            os.mkdir(self.destination)
+        except FileExistsError as e:
+            print(e, self.destination, 'Backup directory already exists moving on....')
+
         print('Download started')
         self.download_files(self.remote_path, self.temp)
         self.create_directories(self.remote_path)
@@ -100,7 +107,7 @@ class RemarkableBackup:
 if __name__ == '__main__':
     try:
         create_backup = RemarkableBackup(
-            '/home/root/.local/share/remarkable/xochitl/', './testing_dump/')
+            '/home/root/.local/share/remarkable/xochitl/', './backup/')
         create_backup.full_backup()
         print('Backup complete')
     except Exception as e:
