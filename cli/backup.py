@@ -7,7 +7,9 @@ from stat import S_ISDIR, S_ISREG
 
 
 class RemarkableBackup:
-    def __init__(self, remote_path, destination, host='10.11.99.1', port=22, username='root', password=None, log='./backup_download.log'):
+    def __init__(self, remote_path, destination, host='10.11.99.1',
+                 port=22, username='root', password=None,
+                 log='./backup_download.log'):
         self.remote_path = remote_path
         self.destination = destination
         self.temp = '/tmp/remarkable2_' + time.strftime('%m%d%Y') + '/'
@@ -34,19 +36,22 @@ class RemarkableBackup:
         '''
         scan remarkable2 for files -> creates list
         '''
-        return [file.filename for file in self.sftp.listdir_iter(remote_dir) if S_ISREG(file.st_mode)]
+        return [file.filename for file in self.sftp.listdir_iter(remote_dir)
+                if S_ISREG(file.st_mode)]
 
     def download_files(self, remote_dir, temp_destination):
         '''
         uses sftp to download files 1 by 1 from remarkable2
         '''
-        return [self.sftp.get(remote_dir + file, temp_destination + file) for file in self.scan_files(remote_dir)]
+        return [self.sftp.get(remote_dir + file, temp_destination + file)
+                for file in self.scan_files(remote_dir)]
 
     def scan_directories(self, remote_dir):
         '''
         scan remarkable2 for directories -> creates list
         '''
-        return [file_indir for file_indir in self.sftp.listdir_iter(remote_dir) if S_ISDIR(file_indir.st_mode)]
+        return [file_indir for file_indir in self.sftp.listdir_iter(remote_dir)
+                if S_ISDIR(file_indir.st_mode)]
 
     def create_directories(self, remote_dir):
         '''
@@ -58,7 +63,8 @@ class RemarkableBackup:
             try:
                 os.mkdir(self.temp + directory.filename, mode=dir_perms)
             except FileExistsError as e:
-                print(e, directory.filename, 'Backup subdir already exists moving on....')
+                print(e, directory.filename,
+                      'Backup subdir already exists moving on....')
             self.download_files(remote_dir + directory.filename +
                                 '/', self.temp + directory.filename + '/')
 
@@ -66,7 +72,8 @@ class RemarkableBackup:
         '''
         gzip stuff goes here
         '''
-        with tarfile.open(self.destination + 'remarkable_2_' + time.strftime('%m%d%Y') + '.tar.gz', 'w:gz') as tar:
+        with tarfile.open(self.destination + 'remarkable_2_' +
+                          time.strftime('%m%d%Y') + '.tar.gz', 'w:gz') as tar:
             for name in os.listdir(self.temp):
                 tar.add(self.temp + name)
             tar.close()
@@ -88,12 +95,13 @@ class RemarkableBackup:
         try:
             os.mkdir(self.temp)
         except FileExistsError as e:
-            print(e, 'Looks like temp backup directory exists overwriting files...')
+            print(e, 'Temp backup directory exists overwriting files...')
 
         try:
             os.mkdir(self.destination)
         except FileExistsError as e:
-            print(e, self.destination, 'Backup directory already exists moving on....')
+            print(e, self.destination,
+                  'Backup directory already exists moving on....')
 
         print('Download started')
         self.download_files(self.remote_path, self.temp)
