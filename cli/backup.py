@@ -1,4 +1,3 @@
-import click
 import shutil
 import paramiko
 import os
