@@ -4,7 +4,6 @@ import paramiko
 import os
 import tarfile
 import time
-import shutil
 from stat import S_ISDIR, S_ISREG
 
 
