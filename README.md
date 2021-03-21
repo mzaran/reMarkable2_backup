@@ -47,4 +47,4 @@ create_backup = RemarkableBackup('/home/root/.local/share/remarkable/xochitl/', 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 ## License
-[MIT](https://choosealicense.com/licenses/mit/)
+[GNU LGPLv2.1](https://choosealicense.com/licenses/lgpl-2.1/)
